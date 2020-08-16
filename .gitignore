@@ -1,0 +1,9 @@
+node_modules/
+config/
+
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln

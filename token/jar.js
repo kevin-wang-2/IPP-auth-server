@@ -11,12 +11,12 @@ const crypto = require("crypto");
  * @returns {String}
  */
 let sha256 = (context) => {
-    return crypto.createHash("sha256").update(context).digest("base64");
+    return crypto.createHash("sha256").update(context).digest("hex");
 };
 
 module.exports = {
     id: 0,
-    async generate(ip, authority = 0, long = false) {
+    async generate(ip, uid, authority = 0, long = false) {
         let val = {
             machine: config.machine,
             part: sha256(JSON.stringify(module.id)),
@@ -24,7 +24,8 @@ module.exports = {
             time: Date.now(),
             expires: Date.now() + (long ? (7 * 24 * 3600 * 1000) : (100 * 1000)),
             authority,
-            long
+            long,
+            uid
         };
 
         let token =  sha256(JSON.stringify(val));
@@ -37,7 +38,8 @@ module.exports = {
             expires: val.expires,
             ip: ip,
             authority,
-            long
+            long,
+            uid
         });
 
         await db.close();
@@ -57,6 +59,8 @@ module.exports = {
         if(result.valid) {
             result.token = val[0].token;
             result.expires = val[0].expires;
+            result.uid = val[0].uid;
+            result.authority = val[0].authority;
             result.needUpdate = cntNeedupdate > 0;
         }
 
@@ -69,7 +73,7 @@ module.exports = {
         if(counter.length > 0) {
             await col.deleteOne({token: token, ip: ip});
             await db.close();
-            let tokenResult = await this.generate(ip, counter[0].authority, counter[0].long);
+            let tokenResult = await this.generate(ip, counter[0].uid, counter[0].authority, counter[0].long);
             return {n: 1, nModified: 1, ok: 1, token: tokenResult.token, expires: tokenResult.expires, needUpdate: false};
         } else {
             await db.close();

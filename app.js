@@ -48,7 +48,7 @@ async function auth(ip, username, password, long = false) {
     let userCol = db.db(config["db"]["db"]["business"]).collection("user");
     let counter = await userCol.find({username: username, password: sha256(password)}).toArray();
     if(counter.length > 0) {
-         return await token.generate(ip, counter[0].authority, long);
+         return await token.generate(ip, counter[0]._id, counter[0].authority, long);
     } else {
         return {token: ""};
     }
@@ -86,6 +86,8 @@ app.use("/auth", async (req, res) => {
             if(info.valid) { // token有效
                 result.token = req.headers.authorization;
                 result.expires = info.expires;
+                result.uid = info.uid;
+                result.authority = info.authority;
                 result.needUpdate = info.needUpdate;
             } else { // token无效
                 result.token = "";
@@ -137,4 +139,4 @@ app.use((req, res) => {
 });
 
 // 监听
-app.listen(config.port);
+app.listen(config.auth.port);

@@ -61,8 +61,8 @@ app.use("/auth", async (req, res) => {
         req.socket.remoteAddress ||
         req.connection.socket.remoteAddress;
     if(req.method.toLowerCase() === "delete") {
-        if(req.headers.token) {
-            let result = await token.expire(req.query.origin || ip, req.headers.token);
+        if(req.headers.authorization) {
+            let result = await token.expire(req.query.origin || ip, req.headers.authorization);
         }
         result.token = "";
     }
